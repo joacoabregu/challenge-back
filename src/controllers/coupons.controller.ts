@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
+import Joi from "joi";
 import { getRepository } from "typeorm";
 import { Coupons } from "../entity/Coupons";
+import { codeSchema } from "../validators/coupon";
 
 export const getCoupons = async (req: Request, res: Response) => {
   let code = req.query.code as string;
@@ -19,11 +21,38 @@ export const getCoupons = async (req: Request, res: Response) => {
       }
     })
     .catch((err) => {
-      res.send({ message: "error" });
+      res.send({ message: "error", error: err.message });
     });
 };
 
 export const createCoupon = async (req: Request, res: Response) => {
   let code = req.query.code as string;
 
+  const { error } = codeSchema.validate(code);
+
+  if (error) {
+    res.status(422).json({
+      status: "error",
+      message: "Invalid Code",
+      data: error.message,
+    });
+  }
+
+  let repository = getRepository(Coupons);
+  let coupon = new Coupons();
+  coupon.code = code;
+
+  repository
+    .save(coupon)
+    .then(() => {
+      res.sendStatus(201);
+    })
+    .catch((err) => {
+      res.send({ message: "error", error: err.message });
+    });
+};
+
+export const update = async (req: Request, res: Response) => {
+
+  
 }
