@@ -14,7 +14,6 @@ export class Coupons {
   @Column({
     type: "timestamp",
     nullable: true,
-    default: () => "CURRENT_TIMESTAMP",
   })
   assigned_at: string;
 
