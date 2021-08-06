@@ -31,3 +31,30 @@ export const getStore = async (
       res.send({ message: "error", error: err.message });
     });
 };
+
+export const getStores = async (req: Request, res: Response) => {
+  let page = req.query.page as string;
+  let pageStart: number = Number(page) * 10 - 10;
+  let repository = getRepository(Stores);
+  let allStores = await repository.find();
+  if (!page) {
+    let response = {
+      stores_total: allStores.length,
+      allStores,
+    };
+    return res.send(response);
+  }
+
+  repository
+    .find({
+      skip: pageStart,
+      take: 10,
+    })
+    .then((stores) => {
+      let response = { stores_total: allStores.length, paginateStores: stores };
+      res.send(response);
+    })
+    .catch((err) => {
+      res.send({ message: "error", error: err.message });
+    });
+};
