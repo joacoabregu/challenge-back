@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import { getRepository } from "typeorm";
 import { Coupons } from "../entity/Coupons";
-import { codeSchema } from "../validators/coupon";
+import { codeSchema, emailSchema } from "../validators/coupon";
 
 export const getCoupons = async (req: Request, res: Response) => {
   let code = req.query.code as string;
@@ -52,7 +52,29 @@ export const createCoupon = async (req: Request, res: Response) => {
     });
 };
 
-export const update = async (req: Request, res: Response) => {
+export const updateCoupon = async (req: Request, res: Response) => {
+  let email = req.query.email as string;
 
-  
-}
+  const { error } = emailSchema.validate(email);
+
+  if (error) {
+    res.status(422).json({
+      status: "error",
+      message: "Invalid email",
+      data: error.message,
+    });
+  }
+  let repository = getRepository(Coupons);
+
+  repository
+    .findOne(email)
+    .then(() => {
+      res.status(422).json({
+        status: "error",
+        message: "Este email ya ha generado un cupón",
+      });
+    })
+    .catch((err) => {
+      res.send({ message: "error", error: err.message });
+    });
+};
