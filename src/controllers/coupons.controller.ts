@@ -1,6 +1,7 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import Joi from "joi";
-import { getRepository } from "typeorm";
+import { EROFS } from "node:constants";
+import { getRepository, IsNull } from "typeorm";
 import { Coupons } from "../entity/Coupons";
 import { codeSchema, emailSchema } from "../validators/coupon";
 
@@ -52,7 +53,11 @@ export const createCoupon = async (req: Request, res: Response) => {
     });
 };
 
-export const updateCoupon = async (req: Request, res: Response) => {
+export const validateEmailCoupon = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   let email = req.query.email as string;
 
   const { error } = emailSchema.validate(email);
@@ -67,14 +72,45 @@ export const updateCoupon = async (req: Request, res: Response) => {
   let repository = getRepository(Coupons);
 
   repository
-    .findOne(email)
-    .then(() => {
-      res.status(422).json({
-        status: "error",
-        message: "Este email ya ha generado un cupón",
-      });
+    .findOne({ customer_email: email })
+    .then((data) => {
+      console.log(data);
+      if (data) {
+        res.status(422).json({
+          status: "error",
+          message: "Este email ya ha generado un cupón",
+        });
+      } else {
+        next();
+      }
     })
     .catch((err) => {
       res.send({ message: "error", error: err.message });
     });
+};
+
+export const updateCoupon = async (req: Request, res: Response) => {
+  let email = req.query.email as string;
+
+  let repository = getRepository(Coupons);
+
+  let couponToUpdate = await repository.findOne({
+    where: {
+      customer_email: IsNull(),
+    },
+  });
+
+  if (couponToUpdate) {
+    couponToUpdate.customer_email = email;
+    repository.save(couponToUpdate).then((data) => {
+      res.send(
+        "Se ha asignado correctamente el email " +
+          data.customer_email +
+          " al cupon " +
+          data.code
+      );
+    });
+  } else {
+    res.status(200).send({ message: "No quedan cupones disponibles" });
+  }
 };
