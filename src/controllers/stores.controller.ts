@@ -58,3 +58,36 @@ export const getStores = async (req: Request, res: Response) => {
       res.send({ message: "error", error: err.message });
     });
 };
+
+export const createStore = async (req: Request, res: Response) => {
+  let name = req.query.name as string;
+  let address = req.query.address as string;
+
+  if (!name) {
+    return res.status(422).json({
+      status: "error",
+      message: "Ingrese un nombre válido",
+    });
+  }
+  if (!address) {
+    return res.status(422).json({
+      status: "error",
+      message: "Ingrese una dirección válida",
+    });
+  }
+  let repository = getRepository(Stores);
+  let newStore = new Stores();
+
+  newStore.name = name;
+  newStore.address = address;
+  repository
+    .save(newStore)
+    .then((data) => {
+      res.sendStatus(201);
+    })
+    .catch((err) => {
+      res.send({ message: "error", error: err.message });
+    });
+
+
+};
