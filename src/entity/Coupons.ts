@@ -11,9 +11,13 @@ export class Coupons {
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   expires_at: string;
 
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  @Column({
+    type: "timestamp",
+    nullable: true,
+    default: () => "CURRENT_TIMESTAMP",
+  })
   assigned_at: string;
 
-  @Column({ type: "varchar", length: 100 })
+  @Column({ type: "varchar", length: 100, nullable: true })
   customer_email: string;
 }
