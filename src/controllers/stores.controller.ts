@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { getRepository } from "typeorm";
 import { Stores } from "../entity/Store";
+import { storeIdSchema } from "../validators/coupon";
 
 export const getStore = async (
   req: Request,
@@ -88,6 +89,35 @@ export const createStore = async (req: Request, res: Response) => {
     .catch((err) => {
       res.send({ message: "error", error: err.message });
     });
+};
 
+export const deleteStore = async (req: Request, res: Response) => {
+  let id = req.query.id as string;
+  const { error } = storeIdSchema.validate(Number(id));
 
+  if (error) {
+    res.status(422).json({
+      status: "error",
+      message: "Debe ingresar un ID válido",
+      data: error.message,
+    });
+  }
+  let repository = getRepository(Stores);
+
+  let store = await repository.findOne({ id: Number(id) });
+
+  if (!store) {
+    return res.status(404).json({
+      status: "error",
+      message: "El ID ingresado no existe en la base de datos.",
+    });
+  }
+  repository
+    .remove(store)
+    .then(() => {
+      res.status(201).send("Se ha eliminado el cupón con el ID " + id);
+    })
+    .catch((err) => {
+      res.send({ message: "error", error: err.message });
+    });
 };

@@ -8,7 +8,12 @@ import {
   updateCoupon,
   validateEmailCoupon,
 } from "./controllers/coupons.controller";
-import { createStore, getStore, getStores } from "./controllers/stores.controller";
+import {
+  createStore,
+  deleteStore,
+  getStore,
+  getStores,
+} from "./controllers/stores.controller";
 
 const app = express();
 createConnection();
@@ -20,6 +25,6 @@ app.delete("/coupons", deleteCoupon);
 
 app.get("/stores", getStore, getStores);
 app.post("/stores", createStore);
-
+app.delete("/stores", deleteStore);
 
 app.listen(process.env.PORT);
