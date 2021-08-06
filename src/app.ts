@@ -1,8 +1,11 @@
+require("dotenv").config();
 import express from "express";
+import { createConnection } from "typeorm";
+import { getCoupons } from "./controllers/coupons.controller";
+
 const app = express();
+createConnection();
 
-app.get("/",  function (req, res) {
-  res.send('Hello');
-});
+app.get("/coupons", getCoupons);
 
-app.listen(3300);
+app.listen(process.env.PORT);
