@@ -102,15 +102,50 @@ export const updateCoupon = async (req: Request, res: Response) => {
 
   if (couponToUpdate) {
     couponToUpdate.customer_email = email;
-    repository.save(couponToUpdate).then((data) => {
-      res.send(
-        "Se ha asignado correctamente el email " +
-          data.customer_email +
-          " al cupon " +
-          data.code
-      );
-    });
+    repository
+      .save(couponToUpdate)
+      .then((data) => {
+        res.send(
+          "Se ha asignado correctamente el email " +
+            data.customer_email +
+            " al cupon " +
+            data.code
+        );
+      })
+      .catch((err) => {
+        res.send({ message: "error", error: err.message });
+      });
   } else {
     res.status(200).send({ message: "No quedan cupones disponibles" });
+  }
+};
+
+export const deleteCoupon = async (req: Request, res: Response) => {
+  let id = req.query.id as string;
+
+  let repository = getRepository(Coupons);
+
+  let coupon = await repository.findOne({ id: Number(id) });
+
+  if (!coupon) {
+    return res.status(404).json({
+      status: "error",
+      message: "El ID ingresado no existe en la base de datos.",
+    });
+  }
+  if (coupon.customer_email) {
+    return res.status(404).json({
+      status: "error",
+      message: "El cupón ingresado no se puede eliminar. Ya ha sido asignado.",
+    });
+  } else {
+    repository
+      .remove(coupon)
+      .then((data) => {
+        res.status(201).send("Se ha eliminado el cupón con el ID" + id);
+      })
+      .catch((err) => {
+        res.send({ message: "error", error: err.message });
+      });
   }
 };
