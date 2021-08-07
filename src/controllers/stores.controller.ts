@@ -20,7 +20,7 @@ export const getStore = async (
     .findOne({ name })
     .then((store) => {
       if (!store) {
-        res.status(404).json({
+        res.status(404).send({
           status: "error",
           message: "El nombre ingresado no existe en la base de datos.",
         });
@@ -29,35 +29,46 @@ export const getStore = async (
       }
     })
     .catch((err) => {
-      res.send({ message: "error", error: err.message });
+      res.status(500).send({ message: "error", error: err.message });
     });
 };
 
 export const getStores = async (req: Request, res: Response) => {
   let page = req.query.page as string;
-  let pageStart: number = Number(page) * 10 - 10;
-  let repository = getRepository(Stores);
-  let allStores = await repository.find();
-  if (!page) {
-    let response = {
-      stores_total: allStores.length,
-      allStores,
-    };
-    return res.send(response);
+
+  if (page) {
+    const { error } = storeIdSchema.validate(Number(page));
+
+    if (error) {
+      res.status(422).json({
+        status: "error",
+        message: "Debe ingresar un número de página válido",
+        data: error.message,
+      });
+    }
   }
 
-  repository
-    .find({
+  let pageStart: number = Number(page) * 10 - 10;
+  let repository = getRepository(Stores);
+
+  try {
+    let allStores = await repository.find();
+    if (!page) {
+      let response = {
+        stores_total: allStores.length,
+        allStores,
+      };
+      return res.send(response);
+    }
+    let paginateStores = await repository.find({
       skip: pageStart,
       take: 10,
-    })
-    .then((stores) => {
-      let response = { stores_total: allStores.length, paginateStores: stores };
-      res.send(response);
-    })
-    .catch((err) => {
-      res.send({ message: "error", error: err.message });
     });
+    let response = { stores_total: allStores.length, paginateStores };
+    res.send(response);
+  } catch (err) {
+    res.status(500).send({ message: "error", error: err.message });
+  }
 };
 
 export const createStore = async (req: Request, res: Response) => {
@@ -65,13 +76,13 @@ export const createStore = async (req: Request, res: Response) => {
   let address = req.query.address as string;
 
   if (!name) {
-    return res.status(422).json({
+    return res.status(422).send({
       status: "error",
       message: "Ingrese un nombre válido",
     });
   }
   if (!address) {
-    return res.status(422).json({
+    return res.status(422).send({
       status: "error",
       message: "Ingrese una dirección válida",
     });
@@ -81,6 +92,7 @@ export const createStore = async (req: Request, res: Response) => {
 
   newStore.name = name;
   newStore.address = address;
+
   repository
     .save(newStore)
     .then((data) => {
@@ -104,18 +116,24 @@ export const deleteStore = async (req: Request, res: Response) => {
   }
   let repository = getRepository(Stores);
 
-  let store = await repository.findOne({ id: Number(id) });
-
-  if (!store) {
-    return res.status(404).json({
-      status: "error",
-      message: "El ID ingresado no existe en la base de datos.",
-    });
-  }
   repository
-    .remove(store)
-    .then(() => {
-      res.status(201).send("Se ha eliminado el cupón con el ID " + id);
+    .findOne({ id: Number(id) })
+    .then((store) => {
+      if (!store) {
+        return store;
+      } else {
+        return repository.remove(store);
+      }
+    })
+    .then((data) => {
+      if (!data) {
+        return res.status(404).json({
+          status: "error",
+          message: "El ID ingresado no existe en la base de datos.",
+        });
+      } else {
+        res.status(201).send("Se ha eliminado el cupón con el ID " + id);
+      }
     })
     .catch((err) => {
       res.send({ message: "error", error: err.message });
