@@ -113,6 +113,8 @@ export const updateCoupon = async (req: Request, res: Response) => {
     });
     if (couponToUpdate) {
       couponToUpdate.customer_email = email;
+      let date = new Date();
+      couponToUpdate.assigned_at = date.toISOString();
       let couponUpdated = await repository.save(couponToUpdate);
       res.send(
         "Se ha asignado correctamente el email " +
