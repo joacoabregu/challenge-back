@@ -24,13 +24,11 @@ app.get("/coupons", getCoupons);
 app.post("/coupons", createCoupon);
 app.patch("/coupons", validateEmailCoupon, updateCoupon);
 app.delete("/coupons", deleteCoupon);
-
+// Stats Route
+app.get("/coupons/stats", getStats);
 // Stores Routes
 app.get("/stores", getStore, getStores);
 app.post("/stores", createStore);
 app.delete("/stores", deleteStore);
-
-// Stats Route
-app.get("/stats", getStats);
 
 app.listen(process.env.PORT);
