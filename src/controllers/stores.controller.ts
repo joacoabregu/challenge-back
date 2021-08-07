@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { getRepository } from "typeorm";
 import { Stores } from "../entity/Store";
-import { storeIdSchema } from "../validators/coupon";
+import { numberSchema } from "../validators/coupon";
 
 export const getStore = async (
   req: Request,
@@ -37,7 +37,7 @@ export const getStores = async (req: Request, res: Response) => {
   let page = req.query.page as string;
 
   if (page) {
-    const { error } = storeIdSchema.validate(Number(page));
+    const { error } = numberSchema.validate(Number(page));
 
     if (error) {
       res.status(422).json({
@@ -105,7 +105,7 @@ export const createStore = async (req: Request, res: Response) => {
 
 export const deleteStore = async (req: Request, res: Response) => {
   let id = req.query.id as string;
-  const { error } = storeIdSchema.validate(Number(id));
+  const { error } = numberSchema.validate(Number(id));
 
   if (error) {
     res.status(422).json({
