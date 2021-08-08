@@ -1,220 +1,172 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.deleteCoupon = exports.updateCoupon = exports.validateEmailCoupon = exports.createCoupon = exports.getCoupons = void 0;
+const typeorm_1 = require("typeorm");
+const Coupons_1 = require("../entity/Coupons");
+const coupon_1 = require("../validators/coupon");
+const getCoupons = async (req, res) => {
+    let code = req.query.code;
+    let email = req.query.email;
+    let repository = typeorm_1.getRepository(Coupons_1.Coupons);
+    repository
+        .find({ code })
+        .then((data) => {
+        let coupon = data[0];
+        if (coupon.customer_email === email) {
+            res.sendStatus(200);
+        }
+        else {
+            res.status(404).send("The coupon doesn't belong to the provided email");
+        }
+    })
+        .catch((err) => {
+        res.send({ message: "error", error: err.message });
     });
 };
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+exports.getCoupons = getCoupons;
+const createCoupon = async (req, res) => {
+    let code = req.query.code;
+    // Check if a code was passed
+    if (!code) {
+        res.status(422).json({
+            status: "error",
+            message: "You must enter a code",
+        });
+    }
+    //Check if the code is valid
+    let { error } = coupon_1.codeSchema.validate(code);
+    if (error) {
+        res.status(422).json({
+            status: "error",
+            message: "Invalid code",
+            data: error.message,
+        });
+    }
+    //Create new coupon and store it in the database
+    let repository = typeorm_1.getRepository(Coupons_1.Coupons);
+    let coupon = new Coupons_1.Coupons();
+    coupon.code = code;
+    repository
+        .save(coupon)
+        .then(() => {
+        res.sendStatus(201);
+    })
+        .catch((err) => {
+        res.send({ message: "error", error: err.message });
+    });
+};
+exports.createCoupon = createCoupon;
+const validateEmailCoupon = async (req, res, next) => {
+    let email = req.query.email;
+    // Check if an email was passed
+    if (!email) {
+        res.status(422).json({
+            status: "error",
+            message: "You must enter an email",
+        });
+    }
+    //Check if the email is valid
+    const { error } = coupon_1.emailSchema.validate(email);
+    if (error) {
+        res.status(422).json({
+            status: "error",
+            message: "Invalid email",
+            data: error.message,
+        });
+    }
+    // Check if the email has already generated a coupon. If not pass to next middleware.
+    let repository = typeorm_1.getRepository(Coupons_1.Coupons);
+    repository
+        .findOne({ customer_email: email })
+        .then((data) => {
+        if (data) {
+            res.status(422).json({
+                status: "error",
+                message: "This email has already generated a coupon",
+            });
+        }
+        else {
+            next();
+        }
+    })
+        .catch((err) => {
+        res.send({ message: "error", error: err.message });
+    });
+};
+exports.validateEmailCoupon = validateEmailCoupon;
+const updateCoupon = async (req, res) => {
+    let email = req.query.email;
+    let repository = typeorm_1.getRepository(Coupons_1.Coupons);
+    try {
+        // Find a cupon that hasn't already been assigned
+        let couponToUpdate = await repository.findOne({
+            where: {
+                customer_email: typeorm_1.IsNull(),
+            },
+        });
+        // If there is a coupon, update it. Otherwise, send a message.
+        if (couponToUpdate) {
+            couponToUpdate.customer_email = email;
+            let date = new Date();
+            couponToUpdate.assigned_at = date.toISOString();
+            let couponUpdated = await repository.save(couponToUpdate);
+            res.send("The email " +
+                couponUpdated.customer_email +
+                " has been assigned correctly to the coupon " +
+                couponUpdated.code);
+        }
+        else {
+            res.status(200).send({ message: "No coupons available" });
+        }
+    }
+    catch (err) {
+        res.send({ message: "error", error: err.message });
     }
 };
-import { getRepository, IsNull } from "typeorm";
-import { Coupons } from "../entity/Coupons";
-import { codeSchema, emailSchema, numberSchema } from "../validators/coupon";
-export var getCoupons = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var code, email, repository;
-    return __generator(this, function (_a) {
-        code = req.query.code;
-        email = req.query.email;
-        repository = getRepository(Coupons);
-        repository
-            .find({ code: code })
-            .then(function (data) {
-            var coupon = data[0];
-            if (coupon.customer_email === email) {
-                res.sendStatus(200);
-            }
-            else {
-                res.status(404).send("El cupón no pertenece al email ingresado");
-            }
-        })
-            .catch(function (err) {
-            res.send({ message: "error", error: err.message });
+exports.updateCoupon = updateCoupon;
+const deleteCoupon = async (req, res) => {
+    let id = req.query.id;
+    // Check if an id was passed
+    if (!id) {
+        res.status(422).json({
+            status: "error",
+            message: "You must enter an ID",
         });
-        return [2 /*return*/];
-    });
-}); };
-export var createCoupon = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var code, error, repository, coupon;
-    return __generator(this, function (_a) {
-        code = req.query.code;
-        if (!code) {
-            res.status(422).json({
-                status: "error",
-                message: "Debe ingresar un código",
-            });
-        }
-        error = codeSchema.validate(code).error;
-        if (error) {
-            res.status(422).json({
-                status: "error",
-                message: "Código inválido",
-                data: error.message,
-            });
-        }
-        repository = getRepository(Coupons);
-        coupon = new Coupons();
-        coupon.code = code;
-        repository
-            .save(coupon)
-            .then(function () {
-            res.sendStatus(201);
-        })
-            .catch(function (err) {
-            res.send({ message: "error", error: err.message });
+    }
+    //Check if the id is a number
+    const { error } = coupon_1.numberSchema.validate(Number(id));
+    if (error) {
+        res.status(422).json({
+            status: "error",
+            message: "You must enter a valid ID",
+            data: error.message,
         });
-        return [2 /*return*/];
-    });
-}); };
-export var validateEmailCoupon = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var email, error, repository;
-    return __generator(this, function (_a) {
-        email = req.query.email;
-        if (!email) {
-            res.status(422).json({
+    }
+    let repository = typeorm_1.getRepository(Coupons_1.Coupons);
+    try {
+        // Find the coupon. If it doesn't exist send a message
+        let coupon = await repository.findOne({ id: Number(id) });
+        if (!coupon) {
+            return res.status(404).json({
                 status: "error",
-                message: "Debe ingresar un email",
+                message: "The provided ID doesn't exist in the database.",
             });
         }
-        error = emailSchema.validate(email).error;
-        if (error) {
-            res.status(422).json({
+        // If it has already been assigned, send a message. Otherwise, delete it from the database.
+        if (coupon.customer_email) {
+            return res.status(404).json({
                 status: "error",
-                message: "Invalid email",
-                data: error.message,
+                message: "The provided coupon can't be deleted. It has already been assigned.",
             });
         }
-        repository = getRepository(Coupons);
-        repository
-            .findOne({ customer_email: email })
-            .then(function (data) {
-            if (data) {
-                res.status(422).json({
-                    status: "error",
-                    message: "Este email ya ha generado un cupón",
-                });
-            }
-            else {
-                next();
-            }
-        })
-            .catch(function (err) {
-            res.send({ message: "error", error: err.message });
-        });
-        return [2 /*return*/];
-    });
-}); };
-export var updateCoupon = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var email, repository, couponToUpdate, date, couponUpdated, err_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                email = req.query.email;
-                repository = getRepository(Coupons);
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 6, , 7]);
-                return [4 /*yield*/, repository.findOne({
-                        where: {
-                            customer_email: IsNull(),
-                        },
-                    })];
-            case 2:
-                couponToUpdate = _a.sent();
-                if (!couponToUpdate) return [3 /*break*/, 4];
-                couponToUpdate.customer_email = email;
-                date = new Date();
-                couponToUpdate.assigned_at = date.toISOString();
-                return [4 /*yield*/, repository.save(couponToUpdate)];
-            case 3:
-                couponUpdated = _a.sent();
-                res.send("Se ha asignado correctamente el email " +
-                    couponUpdated.customer_email +
-                    " al cupon " +
-                    couponUpdated.code);
-                return [3 /*break*/, 5];
-            case 4:
-                res.status(200).send({ message: "No quedan cupones disponibles" });
-                _a.label = 5;
-            case 5: return [3 /*break*/, 7];
-            case 6:
-                err_1 = _a.sent();
-                res.send({ message: "error", error: err_1.message });
-                return [3 /*break*/, 7];
-            case 7: return [2 /*return*/];
+        else {
+            repository.remove(coupon).then(() => {
+                res.status(201).send("Coupon with ID " + id + " has been removed");
+            });
         }
-    });
-}); };
-export var deleteCoupon = function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, error, repository, coupon, err_2;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                id = req.query.id;
-                error = numberSchema.validate(Number(id)).error;
-                if (error) {
-                    res.status(422).json({
-                        status: "error",
-                        message: "Debe ingresar un ID válido",
-                        data: error.message,
-                    });
-                }
-                repository = getRepository(Coupons);
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, repository.findOne({ id: Number(id) })];
-            case 2:
-                coupon = _a.sent();
-                if (!coupon) {
-                    return [2 /*return*/, res.status(404).json({
-                            status: "error",
-                            message: "El ID ingresado no existe en la base de datos.",
-                        })];
-                }
-                if (coupon.customer_email) {
-                    return [2 /*return*/, res.status(404).json({
-                            status: "error",
-                            message: "El cupón ingresado no se puede eliminar. Ya ha sido asignado.",
-                        })];
-                }
-                else {
-                    repository.remove(coupon).then(function () {
-                        res.status(201).send("Se ha eliminado el cupón con el ID " + id);
-                    });
-                }
-                return [3 /*break*/, 4];
-            case 3:
-                err_2 = _a.sent();
-                res.send({ message: "error", error: err_2.message });
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
-        }
-    });
-}); };
+    }
+    catch (err) {
+        res.send({ message: "error", error: err.message });
+    }
+};
+exports.deleteCoupon = deleteCoupon;
