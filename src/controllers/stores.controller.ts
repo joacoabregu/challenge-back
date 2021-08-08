@@ -10,12 +10,13 @@ export const getStore = async (
 ) => {
   let name = req.query.name as string;
 
+  // If a name wasn't provided pass to next middleware
   if (!name) {
     return next();
   }
 
+  // Find the store and send message if it exists in database
   let repository = getRepository(Stores);
-
   repository
     .findOne({ name })
     .then((store) => {
@@ -36,6 +37,7 @@ export const getStore = async (
 export const getStores = async (req: Request, res: Response) => {
   let page = req.query.page as string;
 
+  // Check if page is a valid number
   if (page) {
     const { error } = numberSchema.validate(Number(page));
 
@@ -48,11 +50,13 @@ export const getStores = async (req: Request, res: Response) => {
     }
   }
 
+  //Calculate pagination start item
   let pageStart: number = Number(page) * 10 - 10;
   let repository = getRepository(Stores);
 
   try {
     let allStores = await repository.find();
+    // If a page wasn't provided, send all the stores
     if (!page) {
       let response = {
         stores_total: allStores.length,
@@ -60,6 +64,7 @@ export const getStores = async (req: Request, res: Response) => {
       };
       return res.send(response);
     }
+    // If a page was provided, send correspondent stores with pagination
     let paginateStores = await repository.find({
       skip: pageStart,
       take: 10,
@@ -75,6 +80,7 @@ export const createStore = async (req: Request, res: Response) => {
   let name = req.query.name as string;
   let address = req.query.address as string;
 
+  // Check if name and address were provided
   if (!name) {
     return res.status(422).send({
       status: "error",
@@ -87,12 +93,13 @@ export const createStore = async (req: Request, res: Response) => {
       message: "Please enter a valid address",
     });
   }
-  let repository = getRepository(Stores);
-  let newStore = new Stores();
 
+  let repository = getRepository(Stores);
+  // Create a new store
+  let newStore = new Stores();
   newStore.name = name;
   newStore.address = address;
-
+  // Save the  store  to the database
   repository
     .save(newStore)
     .then((data) => {
@@ -105,8 +112,9 @@ export const createStore = async (req: Request, res: Response) => {
 
 export const deleteStore = async (req: Request, res: Response) => {
   let id = req.query.id as string;
-  const { error } = numberSchema.validate(Number(id));
 
+  // Check if ID is a number
+  const { error } = numberSchema.validate(Number(id));
   if (error) {
     res.status(422).json({
       status: "error",
@@ -116,6 +124,7 @@ export const deleteStore = async (req: Request, res: Response) => {
   }
   let repository = getRepository(Stores);
 
+  // Find the store and delete if it exists. Otherwise, send an error message
   repository
     .findOne({ id: Number(id) })
     .then((store) => {

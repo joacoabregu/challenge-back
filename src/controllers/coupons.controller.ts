@@ -16,7 +16,7 @@ export const getCoupons = async (req: Request, res: Response) => {
       if (coupon.customer_email === email) {
         res.sendStatus(200);
       } else {
-        res.status(404).send("El cupón no pertenece al email ingresado");
+        res.status(404).send("The coupon doesn't belong to the provided email");
       }
     })
     .catch((err) => {
@@ -27,15 +27,15 @@ export const getCoupons = async (req: Request, res: Response) => {
 export const createCoupon = async (req: Request, res: Response) => {
   let code = req.query.code as string;
 
+  // Check if a code was passed
   if (!code) {
     res.status(422).json({
       status: "error",
       message: "You must enter a code",
     });
   }
-
+  //Check if the code is valid
   let { error } = codeSchema.validate(code);
-
   if (error) {
     res.status(422).json({
       status: "error",
@@ -43,11 +43,10 @@ export const createCoupon = async (req: Request, res: Response) => {
       data: error.message,
     });
   }
-
+  //Create new coupon and store it in the database
   let repository = getRepository(Coupons);
   let coupon = new Coupons();
   coupon.code = code;
-
   repository
     .save(coupon)
     .then(() => {
@@ -64,16 +63,15 @@ export const validateEmailCoupon = async (
   next: NextFunction
 ) => {
   let email = req.query.email as string;
-
+  // Check if an email was passed
   if (!email) {
     res.status(422).json({
       status: "error",
       message: "You must enter an email",
     });
   }
-
+  //Check if the email is valid
   const { error } = emailSchema.validate(email);
-
   if (error) {
     res.status(422).json({
       status: "error",
@@ -81,8 +79,9 @@ export const validateEmailCoupon = async (
       data: error.message,
     });
   }
-  let repository = getRepository(Coupons);
 
+  // Check if the email has already generated a coupon. If not pass to next middleware.
+  let repository = getRepository(Coupons);
   repository
     .findOne({ customer_email: email })
     .then((data) => {
@@ -106,11 +105,13 @@ export const updateCoupon = async (req: Request, res: Response) => {
   let repository = getRepository(Coupons);
 
   try {
+    // Find a cupon that hasn't already been assigned
     let couponToUpdate = await repository.findOne({
       where: {
         customer_email: IsNull(),
       },
     });
+    // If there is a coupon, update it. Otherwise, send a message.
     if (couponToUpdate) {
       couponToUpdate.customer_email = email;
       let date = new Date();
@@ -132,8 +133,16 @@ export const updateCoupon = async (req: Request, res: Response) => {
 
 export const deleteCoupon = async (req: Request, res: Response) => {
   let id = req.query.id as string;
-  const { error } = numberSchema.validate(Number(id));
 
+  // Check if an id was passed
+  if (!id) {
+    res.status(422).json({
+      status: "error",
+      message: "You must enter an ID",
+    });
+  }
+  //Check if the id is a number
+  const { error } = numberSchema.validate(Number(id));
   if (error) {
     res.status(422).json({
       status: "error",
@@ -141,9 +150,10 @@ export const deleteCoupon = async (req: Request, res: Response) => {
       data: error.message,
     });
   }
-  let repository = getRepository(Coupons);
 
+  let repository = getRepository(Coupons);
   try {
+    // Find the coupon. If it doesn't exist send a message
     let coupon = await repository.findOne({ id: Number(id) });
     if (!coupon) {
       return res.status(404).json({
@@ -151,6 +161,7 @@ export const deleteCoupon = async (req: Request, res: Response) => {
         message: "The provided ID doesn't exist in the database.",
       });
     }
+    // If it has already been assigned, send a message. Otherwise, delete it from the database.
     if (coupon.customer_email) {
       return res.status(404).json({
         status: "error",
