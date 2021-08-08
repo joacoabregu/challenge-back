@@ -1,11 +1,20 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const app = express_1.default();
-app.get("/", function (req, res) {
-    res.send('Hello');
-});
-app.listen(3300);
+require("dotenv").config();
+import express from "express";
+import { createConnection } from "typeorm";
+import { createCoupon, deleteCoupon, getCoupons, updateCoupon, validateEmailCoupon, } from "./controllers/coupons.controller";
+import { getStats } from "./controllers/stats.controller";
+import { createStore, deleteStore, getStore, getStores, } from "./controllers/stores.controller";
+var app = express();
+createConnection();
+// Coupons Routes
+app.get("/coupons", getCoupons);
+app.post("/coupons", createCoupon);
+app.patch("/coupons", validateEmailCoupon, updateCoupon);
+app.delete("/coupons", deleteCoupon);
+// Stats Route
+app.get("/coupons/stats", getStats);
+// Stores Routes
+app.get("/stores", getStore, getStores);
+app.post("/stores", createStore);
+app.delete("/stores", deleteStore);
+app.listen(process.env.PORT);
