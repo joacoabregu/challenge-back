@@ -22,7 +22,7 @@ export const getStore = async (
       if (!store) {
         res.status(404).send({
           status: "error",
-          message: "El nombre ingresado no existe en la base de datos.",
+          message: "The provided name doesn't exist in the database",
         });
       } else {
         res.send(store);
@@ -42,7 +42,7 @@ export const getStores = async (req: Request, res: Response) => {
     if (error) {
       res.status(422).json({
         status: "error",
-        message: "Debe ingresar un número de página válido",
+        message: "You must enter a valid page number",
         data: error.message,
       });
     }
@@ -78,13 +78,13 @@ export const createStore = async (req: Request, res: Response) => {
   if (!name) {
     return res.status(422).send({
       status: "error",
-      message: "Ingrese un nombre válido",
+      message: "Please enter a valid name",
     });
   }
   if (!address) {
     return res.status(422).send({
       status: "error",
-      message: "Ingrese una dirección válida",
+      message: "Please enter a valid address",
     });
   }
   let repository = getRepository(Stores);
@@ -110,7 +110,7 @@ export const deleteStore = async (req: Request, res: Response) => {
   if (error) {
     res.status(422).json({
       status: "error",
-      message: "Debe ingresar un ID válido",
+      message: "You must enter a valid ID",
       data: error.message,
     });
   }
@@ -129,10 +129,10 @@ export const deleteStore = async (req: Request, res: Response) => {
       if (!data) {
         return res.status(404).json({
           status: "error",
-          message: "El ID ingresado no existe en la base de datos.",
+          message: "The provided ID doesn't exist in the database",
         });
       } else {
-        res.status(201).send("Se ha eliminado el cupón con el ID " + id);
+        res.status(201).send("Coupon with ID " + id + " has been removed");
       }
     })
     .catch((err) => {

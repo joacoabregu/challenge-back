@@ -30,7 +30,7 @@ export const createCoupon = async (req: Request, res: Response) => {
   if (!code) {
     res.status(422).json({
       status: "error",
-      message: "Debe ingresar un código",
+      message: "You must enter a code",
     });
   }
 
@@ -39,7 +39,7 @@ export const createCoupon = async (req: Request, res: Response) => {
   if (error) {
     res.status(422).json({
       status: "error",
-      message: "Código inválido",
+      message: "Invalid code",
       data: error.message,
     });
   }
@@ -68,7 +68,7 @@ export const validateEmailCoupon = async (
   if (!email) {
     res.status(422).json({
       status: "error",
-      message: "Debe ingresar un email",
+      message: "You must enter an email",
     });
   }
 
@@ -89,7 +89,7 @@ export const validateEmailCoupon = async (
       if (data) {
         res.status(422).json({
           status: "error",
-          message: "Este email ya ha generado un cupón",
+          message: "This email has already generated a coupon",
         });
       } else {
         next();
@@ -117,13 +117,13 @@ export const updateCoupon = async (req: Request, res: Response) => {
       couponToUpdate.assigned_at = date.toISOString();
       let couponUpdated = await repository.save(couponToUpdate);
       res.send(
-        "Se ha asignado correctamente el email " +
+        "The email " +
           couponUpdated.customer_email +
-          " al cupon " +
+          " has been assigned correctly to the coupon " +
           couponUpdated.code
       );
     } else {
-      res.status(200).send({ message: "No quedan cupones disponibles" });
+      res.status(200).send({ message: "No coupons available" });
     }
   } catch (err) {
     res.send({ message: "error", error: err.message });
@@ -137,7 +137,7 @@ export const deleteCoupon = async (req: Request, res: Response) => {
   if (error) {
     res.status(422).json({
       status: "error",
-      message: "Debe ingresar un ID válido",
+      message: "You must enter a valid ID",
       data: error.message,
     });
   }
@@ -148,18 +148,18 @@ export const deleteCoupon = async (req: Request, res: Response) => {
     if (!coupon) {
       return res.status(404).json({
         status: "error",
-        message: "El ID ingresado no existe en la base de datos.",
+        message: "The provided ID doesn't exist in the database.",
       });
     }
     if (coupon.customer_email) {
       return res.status(404).json({
         status: "error",
         message:
-          "El cupón ingresado no se puede eliminar. Ya ha sido asignado.",
+          "The provided coupon can't be deleted. It has already been assigned.",
       });
     } else {
       repository.remove(coupon).then(() => {
-        res.status(201).send("Se ha eliminado el cupón con el ID " + id);
+        res.status(201).send("Coupon with ID " + id + " has been removed");
       });
     }
   } catch (err) {
