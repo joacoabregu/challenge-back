@@ -1,0 +1,262 @@
+{
+	"info": {
+		"_postman_id": "3bd2723c-66f6-47a4-99ea-974a34fb160c",
+		"name": "challenge-back",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Coupon",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/coupons?email=abmem@vuec.ps&code=H37VUSZS",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"coupons"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "abmem@vuec.ps"
+						},
+						{
+							"key": "code",
+							"value": "H37VUSZS"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Coupon Create",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/coupons?code=YYAA58RT",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"coupons"
+					],
+					"query": [
+						{
+							"key": "code",
+							"value": "YYAA58RT"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Coupon Test",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/coupons?email=gew@av.pm",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"coupons"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "gew@av.pm"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Coupon Update",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/coupons?email=joaco@gmail.com",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"coupons"
+					],
+					"query": [
+						{
+							"key": "email",
+							"value": "joaco@gmail.com"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Coupon",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/coupons?id=102",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"coupons"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "102"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Store Name",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/stores?name=AT%26T Corp.",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"stores"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "AT&T Corp."
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Stores",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/stores?page=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"stores"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Store",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/stores?name=Joaco&address=123 Corrientes",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"stores"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "Joaco"
+						},
+						{
+							"key": "address",
+							"value": "123 Corrientes"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Store",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/stores?id=501",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"stores"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "501"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Stats",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3300/coupons/stats",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3300",
+					"path": [
+						"coupons",
+						"stats"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
