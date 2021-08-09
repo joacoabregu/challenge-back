@@ -2,6 +2,7 @@ require("dotenv").config();
 import express from "express";
 import { createConnection } from "typeorm";
 import {
+  couponCorrespondsToEmail,
   createCoupon,
   deleteCoupon,
   getCoupons,
@@ -20,7 +21,7 @@ const app = express();
 createConnection();
 
 // Coupons Routes
-app.get("/coupons", getCoupons);
+app.get("/coupons", getCoupons, couponCorrespondsToEmail);
 app.post("/coupons", createCoupon);
 app.patch("/coupons", validateEmailCoupon, updateCoupon);
 app.delete("/coupons", deleteCoupon);
