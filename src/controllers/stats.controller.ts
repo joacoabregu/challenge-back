@@ -20,10 +20,10 @@ export const getStats = async (req: Request, res: Response) => {
       .select("DATE(assigned_at)")
       .distinct(true)
       .getRawMany();
-    // Find all the dates from "expires_at" column that are unique
-    let couponsExpiresByDay = await repository
+    // Find all the dates from "created_at" column that are unique
+    let couponsCreatedByDay = await repository
       .createQueryBuilder("coupons")
-      .select("DATE(expires_at)")
+      .select("DATE(created_at)")
       .distinct(true)
       .getRawMany();
 
@@ -32,7 +32,7 @@ export const getStats = async (req: Request, res: Response) => {
       assigned_coupons_total: assignedCoupons.length,
       not_assigned_coupons_total: notAssignedCoupons,
       assigned_by_day_total: couponsAssignedByDay.length - 1,
-      expires_by_day_total: couponsExpiresByDay.length,
+      created_by_day_total: couponsCreatedByDay.length,
     };
 
     res.send(Stats);
