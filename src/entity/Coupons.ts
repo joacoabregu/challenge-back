@@ -19,4 +19,7 @@ export class Coupons {
 
   @Column({ type: "varchar", length: 100, nullable: true })
   customer_email: string;
+
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  created_at: string;
 }
