@@ -36,6 +36,10 @@ __decorate([
     typeorm_1.Column({ type: "varchar", length: 100, nullable: true }),
     __metadata("design:type", String)
 ], Coupons.prototype, "customer_email", void 0);
+__decorate([
+    typeorm_1.Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" }),
+    __metadata("design:type", String)
+], Coupons.prototype, "created_at", void 0);
 Coupons = __decorate([
     typeorm_1.Entity()
 ], Coupons);

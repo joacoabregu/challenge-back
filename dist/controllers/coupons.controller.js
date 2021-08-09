@@ -8,6 +8,28 @@ const getCoupons = async (req, res) => {
     let code = req.query.code;
     let email = req.query.email;
     let repository = typeorm_1.getRepository(Coupons_1.Coupons);
+    if (!code && !email) {
+        repository
+            .find()
+            .then((coupons) => {
+            res.send(coupons);
+        })
+            .catch((err) => {
+            res.send({ message: "error", error: err.message });
+        });
+    }
+    if (!code) {
+        res.status(422).json({
+            status: "error",
+            message: "You must enter a code",
+        });
+    }
+    if (!email) {
+        res.status(422).json({
+            status: "error",
+            message: "You must enter an email",
+        });
+    }
     repository
         .find({ code })
         .then((data) => {
