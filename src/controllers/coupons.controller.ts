@@ -3,11 +3,57 @@ import { getRepository, IsNull } from "typeorm";
 import { Coupons } from "../entity/Coupons";
 import { codeSchema, emailSchema, numberSchema } from "../validators/coupon";
 
-export const getCoupons = async (req: Request, res: Response) => {
+export const getCoupons = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  let code = req.query.code as string;
+  let email = req.query.email as string;
+
+  if (!code && !email) {
+    let repository = getRepository(Coupons);
+    repository
+      .find()
+      .then((coupons) => {
+        res.send(coupons);
+      })
+      .catch((err) => {
+        res.send({ message: "error", error: err.message });
+      });
+  } else {
+    next();
+  }
+};
+
+export const couponCorrespondsToEmail = async (req: Request, res: Response) => {
   let code = req.query.code as string;
   let email = req.query.email as string;
 
   let repository = getRepository(Coupons);
+  /* if (!code && !email) {
+    repository
+      .find()
+      .then((coupons) => {
+        res.send(coupons);
+      })
+      .catch((err) => {
+        res.send({ message: "error", error: err.message });
+      });
+  } */
+
+  if (!code) {
+    res.status(422).json({
+      status: "error",
+      message: "You must enter a code",
+    });
+  }
+  if (!email) {
+    res.status(422).json({
+      status: "error",
+      message: "You must enter an email",
+    });
+  }
 
   repository
     .find({ code })
