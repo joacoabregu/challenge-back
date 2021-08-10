@@ -31,16 +31,6 @@ export const couponCorrespondsToEmail = async (req: Request, res: Response) => {
   let email = req.query.email as string;
 
   let repository = getRepository(Coupons);
-  /* if (!code && !email) {
-    repository
-      .find()
-      .then((coupons) => {
-        res.send(coupons);
-      })
-      .catch((err) => {
-        res.send({ message: "error", error: err.message });
-      });
-  } */
 
   if (!code) {
     res.status(422).json({
