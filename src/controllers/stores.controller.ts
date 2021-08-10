@@ -113,6 +113,13 @@ export const createStore = async (req: Request, res: Response) => {
 export const deleteStore = async (req: Request, res: Response) => {
   let id = req.query.id as string;
 
+  if (!id) {
+    res.status(422).json({
+      status: "error",
+      message: "You must enter an ID",
+    });
+  }
+
   // Check if ID is a number
   const { error } = numberSchema.validate(Number(id));
   if (error) {
